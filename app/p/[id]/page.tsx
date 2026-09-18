@@ -2,9 +2,16 @@ import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-export default async function PharmacistPage({ params }: any) {
-  // Support both Next.js 14 (object) and Next.js 15 (Promise)
-  const resolvedParams = params && typeof params.then === 'function' ? await params : params;
+interface PageProps {
+  params: Promise<{ id: string }> | { id: string };
+}
+
+export default async function PharmacistPage({ params }: PageProps) {
+  // Support both Next.js 14 and Next.js 15 resolution
+  const resolvedParams = params && typeof (params as any).then === 'function' 
+    ? await (params as Promise<{ id: string }>) 
+    : (params as { id: string });
+    
   const id = resolvedParams?.id;
 
   if (!id) {
@@ -36,7 +43,7 @@ export default async function PharmacistPage({ params }: any) {
     raw = {};
   }
 
-  // Safe string helper to prevent React rendering objects/crashing
+  // Safe string helper to avoid React runtime crashes
   const toText = (val: any, fallback = ''): string => {
     if (val === null || val === undefined) return fallback;
     if (typeof val === 'string') return val;
@@ -47,6 +54,7 @@ export default async function PharmacistPage({ params }: any) {
     return String(val);
   };
 
+  // Header & Patient Info fallbacks
   const doctor = toText(raw?.doctor || raw?.doctorName || raw?.prescriber, 'Prescribing Physician');
   const license = toText(raw?.registrationId || raw?.regId || raw?.license || raw?.doctorRegId || raw?.syndicateId, 'MD-Verified');
   const clinic = toText(raw?.clinic || raw?.clinicName, 'Clinic Record');
@@ -57,6 +65,7 @@ export default async function PharmacistPage({ params }: any) {
   const age = ageRaw ? `${toText(ageRaw)} Years` : 'N/A';
   const date = toText(raw?.date || raw?.issueDate || raw?.createdAt, 'Active Record');
 
+  // List normalization
   const rawList = Array.isArray(raw?.medications)
     ? raw.medications
     : Array.isArray(raw?.drugs)
@@ -75,13 +84,57 @@ export default async function PharmacistPage({ params }: any) {
         quantity: '',
       };
     }
-    return {
-      name: toText(item?.name || item?.drug || item?.medicine, 'Prescribed Item'),
-      dosage: toText(item?.dosage || item?.dose || item?.strength, ''),
-      instructions: toText(item?.instructions || item?.sig || item?.directions, 'As directed by physician'),
-      duration: toText(item?.duration || item?.period, ''),
-      quantity: toText(item?.quantity || item?.qty || item?.count, ''),
-    };
+
+    const name = toText(
+      item?.name ||
+      item?.drugName ||
+      item?.tradeName ||
+      item?.genericName ||
+      item?.drug ||
+      item?.medicine ||
+      item?.item ||
+      item?.title,
+      'Prescribed Item'
+    );
+
+    const dosage = toText(
+      item?.dosage ||
+      item?.dose ||
+      item?.strength ||
+      item?.form ||
+      item?.concentration,
+      ''
+    );
+
+    const instructions = toText(
+      item?.instructions ||
+      item?.sig ||
+      item?.directions ||
+      item?.frequency ||
+      item?.frequencyText ||
+      item?.regimen ||
+      item?.instruction,
+      'As directed by physician'
+    );
+
+    const duration = toText(
+      item?.duration ||
+      item?.period ||
+      item?.treatmentDays ||
+      item?.days,
+      ''
+    );
+
+    const quantity = toText(
+      item?.quantity ||
+      item?.qty ||
+      item?.count ||
+      item?.totalQuantity ||
+      item?.packSize,
+      ''
+    );
+
+    return { name, dosage, instructions, duration, quantity };
   });
 
   return (
