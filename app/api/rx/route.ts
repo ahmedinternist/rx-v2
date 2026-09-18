@@ -4,16 +4,24 @@ const SEVEN_DAYS = 604800;
 
 export async function POST(request: Request) {
   try {
+    // 1. API Key Authorization Check
+    const apiKey = request.headers.get('x-api-key');
+    const validKey = process.env.RX_API_SECRET;
+
+    if (!validKey || apiKey !== validKey) {
+      return NextResponse.json({ error: 'Unauthorized: Invalid or missing API key' }, { status: 401 });
+    }
+
     const payload = await request.json();
 
     if (!payload || Object.keys(payload).length === 0) {
       return NextResponse.json({ error: 'Payload cannot be empty' }, { status: 400 });
     }
 
-    // 1. Generate an 8-character unique ID
+    // 2. Generate 8-character unique ID
     const rxId = crypto.randomUUID().replace(/-/g, '').slice(0, 8);
 
-    // 2. Save into Redis via your existing REST API (SET key value EX seconds)
+    // 3. Save to Redis via REST API
     const redisUrl = process.env.UPSTASH_REDIS_REST_URL!;
     const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN!;
 
@@ -27,8 +35,8 @@ export async function POST(request: Request) {
       throw new Error('Database write failed');
     }
 
-    // 3. Formulate viewer URL
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://your-domain.vercel.app';
+    // 4. Formulate viewer URL
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://rx-v2.vercel.app';
     const viewerUrl = `${baseUrl}/p/${rxId}`;
 
     return NextResponse.json({ rxId, url: viewerUrl }, { status: 201 });
