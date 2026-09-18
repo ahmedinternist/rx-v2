@@ -25,8 +25,7 @@ export default async function PharmacistPage({ params }: PageProps) {
   const stored: unknown = typeof result === 'string' ? JSON.parse(result) : result;
   const rx = normalizePrescription(stored);
   if (!rx) notFound();
-  const currentUrl = `https://rx-v2.vercel.app/p/${id}`;
-  const qrCodeUrl = `https://quickchart.io/qr?text=${encodeURIComponent(currentUrl)}&size=140&margin=1`;
+
 
   return (
     <div style={{ maxWidth: '780px', margin: '30px auto', padding: '0 16px', fontFamily: 'system-ui, -apple-system, sans-serif', color: '#1e293b' }}>
@@ -61,11 +60,7 @@ export default async function PharmacistPage({ params }: PageProps) {
             </div>
           </div>
 
-          {/* Quick-Scan QR Code */}
-          <div style={{ textAlign: 'center', borderLeft: '1px solid #f1f5f9', paddingLeft: '20px' }}>
-            <img src={qrCodeUrl} alt="Prescription QR Code" width="120" height="120" style={{ display: 'block', borderRadius: '4px' }} />
-            <span style={{ fontSize: '10px', color: '#94a3b8', display: 'block', marginTop: '4px' }}>Scan to View</span>
-          </div>
+         
         </div>
 
         {/* Medication Table */}
