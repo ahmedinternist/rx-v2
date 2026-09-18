@@ -48,21 +48,28 @@ export default async function PharmacistPage({ params }: PageProps) {
     return String(val);
   };
 
-  const doctor = toText(raw?.doctor || raw?.doctorName || raw?.prescriber, 'Prescribing Physician');
-  const license = toText(raw?.registrationId || raw?.regId || raw?.license || raw?.doctorRegId || raw?.syndicateId, 'MD-Verified');
-  const phone = toText(raw?.phone || raw?.doctorPhone, '0772 325 6700');
+  const doctor = typeof raw?.doctor === 'object' && raw.doctor !== null
+    ? [toText(raw.doctor.name), toText(raw.doctor.specialty)].filter(Boolean).join(' · ') || 'Not provided'
+    : toText(raw?.doctor || raw?.doctorName || raw?.prescriber, 'Not provided');
+  const license = toText(raw?.registrationId || raw?.regId || raw?.license || raw?.doctorRegId || raw?.syndicateId || raw?.doctor?.license_no, 'Not provided');
+  const phone = toText(raw?.phone || raw?.doctorPhone || raw?.clinic?.phone).trim();
   
   const rawPhoneDigits = phone.replace(/[^0-9+]/g, '');
-  const cleanPhoneForDial = rawPhoneDigits.startsWith('0') ? `+964${rawPhoneDigits.slice(1)}` : rawPhoneDigits;
+  const cleanPhoneForDial = /^\+?[0-9]{7,15}$/.test(rawPhoneDigits) ? rawPhoneDigits : '';
   
-  const latitude = raw?.latitude || '32.59655309155033';
-  const longitude = raw?.longitude || '44.02569919732361';
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+  const latitudeText = toText(raw?.latitude).trim();
+  const longitudeText = toText(raw?.longitude).trim();
+  const latitude = Number(latitudeText);
+  const longitude = Number(longitudeText);
+  const mapsUrl = latitudeText && longitudeText && Number.isFinite(latitude) && Number.isFinite(longitude)
+    && Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180
+    ? `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}` : '';
 
   const patient = toText(raw?.patient || raw?.patientName || raw?.name, 'Patient');
-  const ageRaw = raw?.age || raw?.patientAge;
-  const age = ageRaw ? `${toText(ageRaw)} Years` : 'N/A';
-  const date = toText(raw?.date || raw?.issueDate || raw?.createdAt, 'Active Record');
+  const ageRaw = raw?.age ?? raw?.patientAge ?? raw?.patient?.age;
+  const ageText = toText(ageRaw).trim();
+  const age = ageText ? `${ageText} Years` : 'Not provided';
+  const date = toText(raw?.date || raw?.issueDate || raw?.createdAt, 'Not provided');
 
   const rawList = Array.isArray(raw?.medications)
     ? raw.medications
@@ -75,10 +82,10 @@ export default async function PharmacistPage({ params }: PageProps) {
   const medications = rawList.map((item: any) => {
     if (typeof item === 'string') {
       return {
-        tradeName: item,
-        genericName: '',
+        title: item,
+        subtitle: '',
         dosage: '',
-        instructions: 'As directed by physician',
+        instructions: 'Not provided',
         duration: '',
         quantity: '',
       };
@@ -87,6 +94,7 @@ export default async function PharmacistPage({ params }: PageProps) {
     // Extract trade/commercial brand name
     const tradeName = toText(
       item?.tradeName ||
+      item?.brand_name ||
       item?.brandName ||
       item?.commercialName ||
       item?.brand ||
@@ -101,6 +109,7 @@ export default async function PharmacistPage({ params }: PageProps) {
     // Extract generic molecule / scientific name
     const genericName = toText(
       item?.genericName ||
+      item?.generic_name ||
       item?.scientificName ||
       item?.molecule ||
       item?.activeIngredient ||
@@ -115,7 +124,8 @@ export default async function PharmacistPage({ params }: PageProps) {
       : '';
 
     const dosage = toText(item?.dosage || item?.dose || item?.strength || item?.form || item?.concentration, '');
-    const instructions = toText(item?.instructions || item?.sig || item?.directions || item?.frequency || item?.regimen, 'As directed by physician');
+    const explicitInstructions = toText(item?.instructions || item?.sig || item?.directions).trim();
+    const instructions = explicitInstructions || [toText(item?.frequency || item?.regimen).trim(), toText(item?.notes).trim()].filter(Boolean).join(' · ') || 'Not provided';
     const duration = toText(item?.duration || item?.period || item?.treatmentDays || item?.days, '');
     const quantity = toText(item?.quantity || item?.qty || item?.count || item?.totalQuantity, '');
 
@@ -145,7 +155,7 @@ export default async function PharmacistPage({ params }: PageProps) {
           {/* Right Action Icons Group */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             {/* Phone Call Icon */}
-            <a 
+            {cleanPhoneForDial ? <a 
               href={`tel:${cleanPhoneForDial}`} 
               title={`Call Clinic: ${phone}`} 
               aria-label="Call Clinic Phone"
@@ -154,10 +164,10 @@ export default async function PharmacistPage({ params }: PageProps) {
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
               </svg>
-            </a>
+            </a> : null}
 
             {/* Google Maps Pin Icon */}
-            <a 
+            {mapsUrl ? <a 
               href={mapsUrl} 
               target="_blank" 
               rel="noopener noreferrer" 
@@ -169,7 +179,7 @@ export default async function PharmacistPage({ params }: PageProps) {
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                 <circle cx="12" cy="10" r="3"></circle>
               </svg>
-            </a>
+            </a> : null}
 
             {/* Active Status Chip */}
             <span style={{ display: 'inline-flex', alignItems: 'center', padding: '0.25rem 0.6rem', borderRadius: '9999px', fontSize: '0.725rem', fontWeight: 700, backgroundColor: '#22c55e', color: '#ffffff' }}>
@@ -193,7 +203,7 @@ export default async function PharmacistPage({ params }: PageProps) {
                 <strong style={{ color: '#475569', marginRight: '4px' }}>License:</strong> {license}
               </div>
               <div style={{ fontSize: '0.875rem', color: '#0f172a' }}>
-                <strong style={{ color: '#475569', marginRight: '4px' }}>Phone:</strong> {phone}
+                <strong style={{ color: '#475569', marginRight: '4px' }}>Phone:</strong> {phone || 'Not provided'}
               </div>
             </div>
           </section>
@@ -236,7 +246,7 @@ export default async function PharmacistPage({ params }: PageProps) {
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.825rem' }}>
                     <span style={{ color: '#0f172a' }}>
-                      <strong style={{ color: '#475569', marginRight: '4px' }}>Dosage:</strong> {med.dosage || 'Standard'}
+                      <strong style={{ color: '#475569', marginRight: '4px' }}>Dosage:</strong> {med.dosage || 'Not provided'}
                     </span>
                     {med.quantity ? (
                       <span style={{ backgroundColor: '#dcfce7', color: '#14532d', fontSize: '0.75rem', fontWeight: 700, padding: '0.25rem 0.6rem', borderRadius: '9999px' }}>
@@ -253,7 +263,7 @@ export default async function PharmacistPage({ params }: PageProps) {
                   {(med.duration || med.quantity) ? (
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.825rem', fontWeight: 600, color: '#0f172a' }}>
                       <span style={{ color: '#475569' }}>Duration / Qty</span>
-                      <span>{med.duration || 'As directed'} {med.quantity ? `/ Qty ${med.quantity}` : ''}</span>
+                      <span>{med.duration || 'Not provided'} {med.quantity ? `/ Qty ${med.quantity}` : ''}</span>
                     </div>
                   ) : null}
                 </article>
