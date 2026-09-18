@@ -3,16 +3,11 @@ import { notFound } from 'next/navigation';
 export const dynamic = 'force-dynamic';
 
 interface PageProps {
-  params: Promise<{ id: string }> | { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function PharmacistPage({ params }: PageProps) {
-  // Support both Next.js 14 and Next.js 15 resolution
-  const resolvedParams = params && typeof (params as any).then === 'function' 
-    ? await (params as Promise<{ id: string }>) 
-    : (params as { id: string });
-    
-  const id = resolvedParams?.id;
+  const { id } = await params;
 
   if (!id) {
     notFound();
@@ -43,7 +38,6 @@ export default async function PharmacistPage({ params }: PageProps) {
     raw = {};
   }
 
-  // Safe string helper to avoid React runtime crashes
   const toText = (val: any, fallback = ''): string => {
     if (val === null || val === undefined) return fallback;
     if (typeof val === 'string') return val;
@@ -54,7 +48,6 @@ export default async function PharmacistPage({ params }: PageProps) {
     return String(val);
   };
 
-  // Header & Patient Info fallbacks
   const doctor = toText(raw?.doctor || raw?.doctorName || raw?.prescriber, 'Prescribing Physician');
   const license = toText(raw?.registrationId || raw?.regId || raw?.license || raw?.doctorRegId || raw?.syndicateId, 'MD-Verified');
   const clinic = toText(raw?.clinic || raw?.clinicName, 'Clinic Record');
@@ -65,7 +58,6 @@ export default async function PharmacistPage({ params }: PageProps) {
   const age = ageRaw ? `${toText(ageRaw)} Years` : 'N/A';
   const date = toText(raw?.date || raw?.issueDate || raw?.createdAt, 'Active Record');
 
-  // List normalization
   const rawList = Array.isArray(raw?.medications)
     ? raw.medications
     : Array.isArray(raw?.drugs)
