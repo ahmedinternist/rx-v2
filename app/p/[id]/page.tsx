@@ -1,12 +1,5 @@
-import { notFound } from 'next/navigation';
-
-interface Medication {
-  name: string;
-  dosage?: string;
-  instructions: string;
-  duration?: string;
-  quantity?: string;
-}
+ import { notFound } from 'next/navigation';
+import { normalizePrescription } from '../../lib/rx-normalizer';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -29,326 +22,92 @@ export default async function PharmacistPage({ params }: PageProps) {
     notFound();
   }
 
-  const raw: any = typeof result === 'string' ? JSON.parse(result) : result;
-
-  // Normalize data fields from desktop app
-  const doctor = raw.doctor || raw.doctorName || 'Dr. Ahmed Hakim';
-  const license = raw.registrationId || raw.regId || raw.license || raw.doctorRegId || 'MD-Verified';
-  const clinic = raw.clinic || raw.clinicName || 'Specialty Clinic';
-  const phone = raw.phone || raw.doctorPhone || 'Clinic Verified';
-
-  const patient = raw.patient || raw.patientName || 'Patient';
-  const age = raw.age || raw.patientAge ? `${raw.age || raw.patientAge} Years` : 'N/A';
-  const date = raw.date || raw.issueDate || 'Sept 18, 2026';
-
-  const medications: Medication[] = raw.medications || raw.drugs || [];
+  const stored: unknown = typeof result === 'string' ? JSON.parse(result) : result;
+  const rx = normalizePrescription(stored);
+  if (!rx) notFound();
+  const currentUrl = `https://rx-v2.vercel.app/p/${id}`;
+  const qrCodeUrl = `https://quickchart.io/qr?text=${encodeURIComponent(currentUrl)}&size=140&margin=1`;
 
   return (
-    <>
-      <style>{`
-        :root {
-          --top-banner-bg: #1d4ed8;
-          --rx-symbol-color: #93c5fd;
-          --screen-bg: #f1f5f9;
-          --card-bg: #ffffff;
-          --border-color: #cbd5e1;
-          --header-strip-bg: #e2e8f0;
-          --header-strip-text: #0f172a;
-          --text-main: #0f172a;
-          --text-muted: #475569;
-          --badge-bg: #dcfce7;
-          --badge-text: #14532d;
-          --sig-box-bg: #f0fdf4;
-          --sig-box-border: #86efac;
-          --sig-box-title: #166534;
-          --sig-box-text: #14532d;
-        }
-
-        body {
-          background-color: #94a3b8;
-          display: flex;
-          justify-content: center;
-          min-height: 100vh;
-          margin: 0;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        .phone-container {
-          width: 100%;
-          max-width: 440px;
-          background-color: var(--screen-bg);
-          display: flex;
-          flex-direction: column;
-          position: relative;
-          min-height: 100vh;
-          border-left: 1px solid var(--border-color);
-          border-right: 1px solid var(--border-color);
-        }
-
-        .sr-only {
-          position: absolute;
-          width: 1px;
-          height: 1px;
-          padding: 0;
-          margin: -1px;
-          overflow: hidden;
-          clip: rect(0, 0, 0, 0);
-          white-space: nowrap;
-          border: 0;
-        }
-
-        .top-banner {
-          width: 100%;
-          background-color: var(--top-banner-bg);
-          color: #ffffff;
-          padding: 0.9rem 1rem;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          position: sticky;
-          top: 0;
-          z-index: 10;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-          box-sizing: border-box;
-        }
-
-        .banner-title-group {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-        }
-
-        .rx-symbol {
-          font-family: "Times New Roman", Georgia, serif;
-          font-size: 1.5rem;
-          font-weight: 700;
-          line-height: 1;
-          color: var(--rx-symbol-color);
-        }
-
-        .banner-title {
-          font-size: 1.05rem;
-          font-weight: 700;
-          letter-spacing: 0.01em;
-          margin: 0;
-        }
-
-        .banner-status-badge {
-          display: inline-flex;
-          align-items: center;
-          padding: 0.35rem 0.75rem;
-          border-radius: 9999px;
-          font-size: 0.75rem;
-          font-weight: 700;
-          background-color: #22c55e;
-          color: #ffffff;
-        }
-
-        .app-content {
-          padding: 0.85rem;
-          display: flex;
-          flex-direction: column;
-          gap: 0.85rem;
-          padding-bottom: 2rem;
-          box-sizing: border-box;
-        }
-
-        .info-card {
-          background: var(--card-bg);
-          border: 1px solid var(--border-color);
-          border-radius: 12px;
-          overflow: hidden;
-          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-        }
-
-        .card-header-strip {
-          background-color: var(--header-strip-bg);
-          padding: 0.5rem 0.85rem;
-          font-size: 0.85rem;
-          font-weight: 700;
-          color: var(--header-strip-text);
-          border-bottom: 1px solid var(--border-color);
-          margin: 0;
-        }
-
-        .card-body {
-          padding: 0.75rem 0.85rem;
-          display: flex;
-          flex-direction: column;
-          gap: 0.35rem;
-        }
-
-        .info-row {
-          font-size: 0.875rem;
-          line-height: 1.4;
-          color: var(--text-main);
-        }
-
-        .info-row .label {
-          font-weight: 700;
-          color: var(--text-muted);
-          margin-right: 4px;
-        }
-
-        .drug-card {
-          background: var(--card-bg);
-          border: 1px solid var(--border-color);
-          border-radius: 12px;
-          padding: 0.9rem;
-          display: flex;
-          flex-direction: column;
-          gap: 0.65rem;
-          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-        }
-
-        .drug-title {
-          font-size: 0.95rem;
-          font-weight: 700;
-          color: var(--text-main);
-          line-height: 1.3;
-        }
-
-        .drug-meta-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          font-size: 0.825rem;
-        }
-
-        .drug-badge {
-          background-color: var(--badge-bg);
-          color: var(--badge-text);
-          font-size: 0.75rem;
-          font-weight: 700;
-          padding: 0.25rem 0.6rem;
-          border-radius: 9999px;
-        }
-
-        .instructions-container {
-          background-color: var(--sig-box-bg);
-          border-left: 3px solid var(--sig-box-border);
-          border-radius: 0 8px 8px 0;
-          padding: 0.6rem 0.75rem;
-          display: flex;
-          flex-direction: column;
-          gap: 0.25rem;
-        }
-
-        .instructions-title {
-          font-size: 0.75rem;
-          font-weight: 700;
-          color: var(--sig-box-title);
-        }
-
-        .instructions-text {
-          font-size: 0.875rem;
-          font-weight: 600;
-          color: var(--sig-box-text);
-          line-height: 1.35;
-        }
-
-        .drug-footer-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          font-size: 0.825rem;
-          font-weight: 600;
-          color: var(--text-main);
-        }
-      `}</style>
-
-      <div className="phone-container">
-        {/* Top Blue Banner */}
-        <header className="top-banner" role="banner">
-          <div className="banner-title-group">
-            <span className="rx-symbol" aria-hidden="true">&#8478;</span>
-            <h1 className="banner-title">Electronic Prescription</h1>
-          </div>
-          <div className="banner-status-badge" aria-label="Prescription validity status">
-            Active • Valid
-          </div>
-        </header>
-
-        <main className="app-content">
-          {/* Prescriber Information */}
-          <section className="info-card" role="region" aria-labelledby="prescriberHeading">
-            <h2 className="card-header-strip" id="prescriberHeading">Prescriber Information</h2>
-            <div className="card-body">
-              <div className="info-row">
-                <span className="label">Doctor:</span>
-                <span className="val">{doctor}</span>
-              </div>
-              <div className="info-row">
-                <span className="label">License:</span>
-                <span className="val">{license}</span>
-              </div>
-              <div className="info-row">
-                <span className="label">Clinic:</span>
-                <span className="val">{clinic}</span>
-              </div>
-              <div className="info-row">
-                <span className="label">Rx Token:</span>
-                <span className="val" style={{ fontFamily: 'monospace', fontWeight: 700, color: '#1d4ed8' }}>{id}</span>
-              </div>
-            </div>
-          </section>
-
-          {/* Patient Details */}
-          <section className="info-card" role="region" aria-labelledby="patientHeading">
-            <h2 className="card-header-strip" id="patientHeading">Patient Details</h2>
-            <div className="card-body">
-              <div className="info-row">
-                <span className="label">Name:</span>
-                <span className="val">{patient}</span>
-              </div>
-              <div className="info-row">
-                <span className="label">Age:</span>
-                <span className="val">{age}</span>
-              </div>
-              <div className="info-row">
-                <span className="label">Consultation Date:</span>
-                <span className="val">{date}</span>
-              </div>
-            </div>
-          </section>
-
-          {/* Prescribed Medications */}
-          <section role="region" aria-label="Prescribed Medications" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-            <h2 className="sr-only">Prescribed Medications List</h2>
-
-            {medications.length > 0 ? (
-              medications.map((med, index) => (
-                <article className="drug-card" key={index}>
-                  <div className="drug-title">{med.name}</div>
-
-                  <div className="drug-meta-row">
-                    <span className="info-row">
-                      <span className="label">Dosage:</span> {med.dosage || 'Standard'}
-                    </span>
-                    {med.quantity && <span className="drug-badge">{med.quantity}</span>}
-                  </div>
-
-                  <div className="instructions-container">
-                    <span className="instructions-title">Instructions</span>
-                    <span className="instructions-text">{med.instructions}</span>
-                  </div>
-
-                  {(med.duration || med.quantity) && (
-                    <div className="drug-footer-row">
-                      <span className="label">Duration / Qty</span>
-                      <span>{med.duration || 'As directed'} {med.quantity ? `/ Qty ${med.quantity}` : ''}</span>
-                    </div>
-                  )}
-                </article>
-              ))
-            ) : (
-              <div className="info-card" style={{ padding: '1rem', textAlign: 'center', color: '#64748b' }}>
-                No active medications listed in this record.
-              </div>
-            )}
-          </section>
-        </main>
+    <div style={{ maxWidth: '780px', margin: '30px auto', padding: '0 16px', fontFamily: 'system-ui, -apple-system, sans-serif', color: '#1e293b' }}>
+      
+      {/* Verification Banner */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#059669', color: '#fff', padding: '14px 20px', borderRadius: '8px 8px 0 0' }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>Digital Prescription</h1>
+          <p style={{ margin: '2px 0 0', fontSize: '13px', opacity: 0.9 }}>Shared Prescription Record</p>
+        </div>
+        <span style={{ fontSize: '12px', background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '999px', fontWeight: 500 }}>
+          Active • 7-Day Window
+        </span>
       </div>
-    </>
+
+      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderTop: 'none', borderRadius: '0 0 8px 8px', padding: '24px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        
+        {/* Header Metadata & QR Code */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '20px', marginBottom: '24px', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', flex: 1 }}>
+            <div>
+              <span style={{ fontSize: '11px', textTransform: 'uppercase', color: '#64748b', fontWeight: 700, letterSpacing: '0.05em' }}>Prescribing Physician</span>
+              <p style={{ margin: '4px 0 0', fontSize: '16px', fontWeight: 600, color: '#0f172a' }}>{rx.doctor || 'Not Specified'}</p>
+            </div>
+            <div>
+              <span style={{ fontSize: '11px', textTransform: 'uppercase', color: '#64748b', fontWeight: 700, letterSpacing: '0.05em' }}>Patient Name</span>
+              <p style={{ margin: '4px 0 0', fontSize: '16px', fontWeight: 600, color: '#0f172a' }}>{rx.patient || 'Unknown'}</p>
+            </div>
+            <div>
+              <span style={{ fontSize: '11px', textTransform: 'uppercase', color: '#64748b', fontWeight: 700, letterSpacing: '0.05em' }}>Prescription ID</span>
+              <p style={{ margin: '4px 0 0', fontSize: '14px', fontFamily: 'monospace', color: '#059669', fontWeight: 600 }}>{id}</p>
+            </div>
+          </div>
+
+          {/* Quick-Scan QR Code */}
+          <div style={{ textAlign: 'center', borderLeft: '1px solid #f1f5f9', paddingLeft: '20px' }}>
+            <img src={qrCodeUrl} alt="Prescription QR Code" width="120" height="120" style={{ display: 'block', borderRadius: '4px' }} />
+            <span style={{ fontSize: '10px', color: '#94a3b8', display: 'block', marginTop: '4px' }}>Scan to View</span>
+          </div>
+        </div>
+
+        {/* Medication Table */}
+        <div>
+          <h2 style={{ fontSize: '13px', textTransform: 'uppercase', color: '#475569', letterSpacing: '0.05em', marginBottom: '12px' }}>Prescribed Regimen</h2>
+          <div style={{ overflowX: 'auto', border: '1px solid #e2e8f0', borderRadius: '6px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '14px' }}>
+              <thead>
+                <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                  <th style={{ padding: '10px 14px', fontWeight: 600, color: '#475569', width: '45%' }}>Medication</th>
+                  <th style={{ padding: '10px 14px', fontWeight: 600, color: '#475569', width: '55%' }}>Sig / Instructions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rx.medications && rx.medications.length > 0 ? (
+                  rx.medications.map((med, index) => (
+                    <tr key={index} style={{ borderBottom: index === rx.medications.length - 1 ? 'none' : '1px solid #f1f5f9' }}>
+                      <td style={{ padding: '12px 14px', verticalAlign: 'top' }}>
+                        <div style={{ fontWeight: 600, color: '#0f172a' }}>{med.name}</div>
+                        {med.dosage && <div style={{ fontSize: '12px', color: '#64748b' }}>Dosage: {med.dosage}</div>}
+                      </td>
+                      <td style={{ padding: '12px 14px', verticalAlign: 'top', color: '#334155' }}>
+                        {med.instructions}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={2} style={{ padding: '16px', textAlign: 'center', color: '#64748b' }}>No medications listed in this record.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Pharmacist Action Footer */}
+        <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+          <span style={{ fontSize: '12px', color: '#94a3b8' }}>Prescription reference: {id}</span>
+        </div>
+
+      </div>
+    </div>
   );
 }
