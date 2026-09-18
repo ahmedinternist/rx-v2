@@ -1,14 +1,22 @@
 import { notFound } from 'next/navigation';
 
-interface PageProps {
-  params: Promise<{ id: string }>;
-}
+export const dynamic = 'force-dynamic';
 
-export default async function PharmacistPage({ params }: PageProps) {
-  const { id } = await params;
+export default async function PharmacistPage({ params }: any) {
+  // Support both Next.js 14 (object) and Next.js 15 (Promise)
+  const resolvedParams = params && typeof params.then === 'function' ? await params : params;
+  const id = resolvedParams?.id;
 
-  const redisUrl = process.env.UPSTASH_REDIS_REST_URL!;
-  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN!;
+  if (!id) {
+    notFound();
+  }
+
+  const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
+  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (!redisUrl || !redisToken) {
+    throw new Error('Missing Redis environment variables');
+  }
 
   const res = await fetch(`${redisUrl}/get/rx:${id}`, {
     headers: { Authorization: `Bearer ${redisToken}` },
@@ -28,14 +36,26 @@ export default async function PharmacistPage({ params }: PageProps) {
     raw = {};
   }
 
-  const doctor = raw?.doctor || raw?.doctorName || raw?.prescriber || 'Prescribing Physician';
-  const license = raw?.registrationId || raw?.regId || raw?.license || raw?.doctorRegId || raw?.syndicateId || 'MD-Verified';
-  const clinic = raw?.clinic || raw?.clinicName || 'Clinic Record';
-  const phone = raw?.phone || raw?.doctorPhone || '';
+  // Safe string helper to prevent React rendering objects/crashing
+  const toText = (val: any, fallback = ''): string => {
+    if (val === null || val === undefined) return fallback;
+    if (typeof val === 'string') return val;
+    if (typeof val === 'number') return String(val);
+    if (typeof val === 'object') {
+      return val.text || val.value || val.instructions || val.name || JSON.stringify(val);
+    }
+    return String(val);
+  };
 
-  const patient = raw?.patient || raw?.patientName || raw?.name || 'Patient';
-  const age = raw?.age || raw?.patientAge ? `${raw?.age || raw?.patientAge} Years` : 'N/A';
-  const date = raw?.date || raw?.issueDate || raw?.createdAt || 'Active Record';
+  const doctor = toText(raw?.doctor || raw?.doctorName || raw?.prescriber, 'Prescribing Physician');
+  const license = toText(raw?.registrationId || raw?.regId || raw?.license || raw?.doctorRegId || raw?.syndicateId, 'MD-Verified');
+  const clinic = toText(raw?.clinic || raw?.clinicName, 'Clinic Record');
+  const phone = toText(raw?.phone || raw?.doctorPhone, '');
+
+  const patient = toText(raw?.patient || raw?.patientName || raw?.name, 'Patient');
+  const ageRaw = raw?.age || raw?.patientAge;
+  const age = ageRaw ? `${toText(ageRaw)} Years` : 'N/A';
+  const date = toText(raw?.date || raw?.issueDate || raw?.createdAt, 'Active Record');
 
   const rawList = Array.isArray(raw?.medications)
     ? raw.medications
@@ -56,11 +76,11 @@ export default async function PharmacistPage({ params }: PageProps) {
       };
     }
     return {
-      name: item?.name || item?.drug || item?.medicine || 'Prescribed Item',
-      dosage: item?.dosage || item?.dose || item?.strength || '',
-      instructions: item?.instructions || item?.sig || item?.directions || 'As directed by physician',
-      duration: item?.duration || item?.period || '',
-      quantity: item?.quantity || item?.qty || item?.count || '',
+      name: toText(item?.name || item?.drug || item?.medicine, 'Prescribed Item'),
+      dosage: toText(item?.dosage || item?.dose || item?.strength, ''),
+      instructions: toText(item?.instructions || item?.sig || item?.directions, 'As directed by physician'),
+      duration: toText(item?.duration || item?.period, ''),
+      quantity: toText(item?.quantity || item?.qty || item?.count, ''),
     };
   });
 
