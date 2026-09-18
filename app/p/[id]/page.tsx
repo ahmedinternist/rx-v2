@@ -1,18 +1,5 @@
 import { notFound } from 'next/navigation';
-
-interface Medication {
-  name: string;
-  dosage?: string;
-  instructions: string;
-}
-
-interface PrescriptionData {
-  patient: string;
-  doctor: string;
-  clinic?: string;
-  date?: string;
-  medications: Medication[];
-}
+import { normalizePrescription } from '../../lib/rx-normalizer';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -35,7 +22,9 @@ export default async function PharmacistPage({ params }: PageProps) {
     notFound();
   }
 
-  const rx: PrescriptionData = typeof result === 'string' ? JSON.parse(result) : result;
+  const stored: unknown = typeof result === 'string' ? JSON.parse(result) : result;
+  const rx = normalizePrescription(stored);
+  if (!rx) notFound();
   const currentUrl = `https://rx-v2.vercel.app/p/${id}`;
   const qrCodeUrl = `https://quickchart.io/qr?text=${encodeURIComponent(currentUrl)}&size=140&margin=1`;
 
@@ -45,8 +34,8 @@ export default async function PharmacistPage({ params }: PageProps) {
       {/* Verification Banner */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#059669', color: '#fff', padding: '14px 20px', borderRadius: '8px 8px 0 0' }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>Verified Digital Prescription</h1>
-          <p style={{ margin: '2px 0 0', fontSize: '13px', opacity: 0.9 }}>Dispensing Verification Record</p>
+          <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>Digital Prescription</h1>
+          <p style={{ margin: '2px 0 0', fontSize: '13px', opacity: 0.9 }}>Shared Prescription Record</p>
         </div>
         <span style={{ fontSize: '12px', background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '999px', fontWeight: 500 }}>
           Active • 7-Day Window
@@ -75,7 +64,7 @@ export default async function PharmacistPage({ params }: PageProps) {
           {/* Quick-Scan QR Code */}
           <div style={{ textAlign: 'center', borderLeft: '1px solid #f1f5f9', paddingLeft: '20px' }}>
             <img src={qrCodeUrl} alt="Prescription QR Code" width="120" height="120" style={{ display: 'block', borderRadius: '4px' }} />
-            <span style={{ fontSize: '10px', color: '#94a3b8', display: 'block', marginTop: '4px' }}>Scan to Verify</span>
+            <span style={{ fontSize: '10px', color: '#94a3b8', display: 'block', marginTop: '4px' }}>Scan to View</span>
           </div>
         </div>
 
@@ -115,7 +104,7 @@ export default async function PharmacistPage({ params }: PageProps) {
 
         {/* Pharmacist Action Footer */}
         <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: '12px', color: '#94a3b8' }}>Cryptographic verification token: {id}</span>
+          <span style={{ fontSize: '12px', color: '#94a3b8' }}>Prescription reference: {id}</span>
           <button 
             type="button" 
             style={{ background: '#0f172a', color: '#fff', border: 'none', borderRadius: '4px', padding: '8px 16px', fontSize: '13px', cursor: 'pointer', fontWeight: 500 }}
