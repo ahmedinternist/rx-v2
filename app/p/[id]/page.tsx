@@ -25,7 +25,8 @@ export default async function PharmacistPage({ params }: PageProps) {
   const stored: unknown = typeof result === 'string' ? JSON.parse(result) : result;
   const rx = normalizePrescription(stored);
   if (!rx) notFound();
-
+  const currentUrl = `https://rx-v2.vercel.app/p/${id}`;
+  const qrCodeUrl = `https://quickchart.io/qr?text=${encodeURIComponent(currentUrl)}&size=140&margin=1`;
 
   return (
     <div style={{ maxWidth: '780px', margin: '30px auto', padding: '0 16px', fontFamily: 'system-ui, -apple-system, sans-serif', color: '#1e293b' }}>
@@ -60,7 +61,11 @@ export default async function PharmacistPage({ params }: PageProps) {
             </div>
           </div>
 
-         
+          {/* Quick-Scan QR Code */}
+          <div style={{ textAlign: 'center', borderLeft: '1px solid #f1f5f9', paddingLeft: '20px' }}>
+            <img src={qrCodeUrl} alt="Prescription QR Code" width="120" height="120" style={{ display: 'block', borderRadius: '4px' }} />
+            <span style={{ fontSize: '10px', color: '#94a3b8', display: 'block', marginTop: '4px' }}>Scan to View</span>
+          </div>
         </div>
 
         {/* Medication Table */}
@@ -98,15 +103,8 @@ export default async function PharmacistPage({ params }: PageProps) {
         </div>
 
         {/* Pharmacist Action Footer */}
-        <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
           <span style={{ fontSize: '12px', color: '#94a3b8' }}>Prescription reference: {id}</span>
-          <button 
-            type="button" 
-            style={{ background: '#0f172a', color: '#fff', border: 'none', borderRadius: '4px', padding: '8px 16px', fontSize: '13px', cursor: 'pointer', fontWeight: 500 }}
-            onClick={undefined}
-          >
-            Mark Dispensed
-          </button>
         </div>
 
       </div>
