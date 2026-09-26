@@ -56,6 +56,20 @@ export default async function PharmacistPage({ params }: PageProps) {
   
   const rawPhoneDigits = phone.replace(/[^0-9+]/g, '');
   const cleanPhoneForDial = /^\+?[0-9]{7,15}$/.test(rawPhoneDigits) ? rawPhoneDigits : '';
+
+  const websiteText = toText(raw?.website || raw?.clinicWebsite || raw?.clinic?.website).trim();
+  let websiteUrl = '';
+  if (websiteText) {
+    try {
+      const parsedWebsite = new URL(websiteText);
+      if (parsedWebsite.protocol === 'https:' && parsedWebsite.hostname
+          && !parsedWebsite.username && !parsedWebsite.password) {
+        websiteUrl = parsedWebsite.toString();
+      }
+    } catch {
+      websiteUrl = '';
+    }
+  }
   
   const latitudeText = toText(raw?.latitude).trim();
   const longitudeText = toText(raw?.longitude).trim();
@@ -147,17 +161,16 @@ export default async function PharmacistPage({ params }: PageProps) {
         <header style={{ width: '100%', backgroundColor: '#1d4ed8', color: '#ffffff', padding: '0.85rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 10, boxShadow: '0 1px 3px rgba(0, 0, 0, 0.15)', boxSizing: 'border-box' }}>
           
           {/* Left Title Group */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
             <span style={{ fontFamily: '"Times New Roman", Georgia, serif', fontSize: '1.45rem', fontWeight: 700, color: '#93c5fd', lineHeight: 1 }}>&#8478;</span>
-            <h1 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, letterSpacing: '0.01em' }}>Electronic Prescription</h1>
+            <h1 style={{ fontSize: 'clamp(0.8rem, 3.7vw, 1rem)', fontWeight: 700, margin: 0, letterSpacing: '0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Electronic Prescription</h1>
           </div>
 
           {/* Right Action Icons Group */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
             {/* Phone Call Icon */}
             {cleanPhoneForDial ? <a 
               href={`tel:${cleanPhoneForDial}`} 
-              title={`Call Clinic: ${phone}`} 
               aria-label="Call Clinic Phone"
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.18)', color: '#ffffff', textDecoration: 'none', border: '1px solid rgba(255, 255, 255, 0.3)' }}
             >
@@ -171,7 +184,6 @@ export default async function PharmacistPage({ params }: PageProps) {
               href={mapsUrl} 
               target="_blank" 
               rel="noopener noreferrer" 
-              title="Open Clinic Location on Google Maps" 
               aria-label="Open Clinic Location on Google Maps"
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.18)', color: '#ffffff', textDecoration: 'none', border: '1px solid rgba(255, 255, 255, 0.3)' }}
             >
@@ -181,10 +193,21 @@ export default async function PharmacistPage({ params }: PageProps) {
               </svg>
             </a> : null}
 
-            {/* Active Status Chip */}
-            <span style={{ display: 'inline-flex', alignItems: 'center', padding: '0.25rem 0.6rem', borderRadius: '9999px', fontSize: '0.725rem', fontWeight: 700, backgroundColor: '#22c55e', color: '#ffffff' }}>
-              Active
-            </span>
+            {/* Clinic Website Icon */}
+            {websiteUrl ? <a
+              href={websiteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Open Clinic Website"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.18)', color: '#ffffff', textDecoration: 'none', border: '1px solid rgba(255, 255, 255, 0.3)' }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M2 12h20"></path>
+                <path d="M12 2a15.3 15.3 0 0 1 0 20"></path>
+                <path d="M12 2a15.3 15.3 0 0 0 0 20"></path>
+              </svg>
+            </a> : null}
           </div>
         </header>
 
