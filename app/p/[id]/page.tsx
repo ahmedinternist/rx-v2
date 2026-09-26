@@ -52,6 +52,7 @@ export default async function PharmacistPage({ params }: PageProps) {
     ? [toText(raw.doctor.name), toText(raw.doctor.specialty)].filter(Boolean).join(' · ') || 'Not provided'
     : toText(raw?.doctor || raw?.doctorName || raw?.prescriber, 'Not provided');
   const license = toText(raw?.registrationId || raw?.regId || raw?.license || raw?.doctorRegId || raw?.syndicateId || raw?.doctor?.license_no, 'Not provided');
+  const clinicName = toText(raw?.clinicName || raw?.clinic?.name).trim() || 'Electronic Prescription';
   const phone = toText(raw?.phone || raw?.doctorPhone || raw?.clinic?.phone).trim();
   
   const rawPhoneDigits = phone.replace(/[^0-9+]/g, '');
@@ -163,7 +164,7 @@ export default async function PharmacistPage({ params }: PageProps) {
           {/* Left Title Group */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
             <span style={{ fontFamily: '"Times New Roman", Georgia, serif', fontSize: '1.45rem', fontWeight: 700, color: '#93c5fd', lineHeight: 1 }}>&#8478;</span>
-            <h1 style={{ fontSize: 'clamp(0.8rem, 3.7vw, 1rem)', fontWeight: 700, margin: 0, letterSpacing: '0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Electronic Prescription</h1>
+            <h1 style={{ fontSize: 'clamp(0.8rem, 3.7vw, 1rem)', fontWeight: 700, margin: 0, letterSpacing: '0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{clinicName}</h1>
           </div>
 
           {/* Right Action Icons Group */}
@@ -184,6 +185,7 @@ export default async function PharmacistPage({ params }: PageProps) {
               href={mapsUrl} 
               target="_blank" 
               rel="noopener noreferrer" 
+              referrerPolicy="no-referrer"
               aria-label="Open Clinic Location on Google Maps"
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.18)', color: '#ffffff', textDecoration: 'none', border: '1px solid rgba(255, 255, 255, 0.3)' }}
             >
@@ -198,6 +200,7 @@ export default async function PharmacistPage({ params }: PageProps) {
               href={websiteUrl}
               target="_blank"
               rel="noopener noreferrer"
+              referrerPolicy="no-referrer"
               aria-label="Open Clinic Website"
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.18)', color: '#ffffff', textDecoration: 'none', border: '1px solid rgba(255, 255, 255, 0.3)' }}
             >
