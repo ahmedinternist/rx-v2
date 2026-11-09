@@ -1,3 +1,4 @@
+import styles from './prescription.module.css';
 import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
@@ -54,7 +55,7 @@ export default async function PharmacistPage({ params }: PageProps) {
   const license = toText(raw?.registrationId || raw?.regId || raw?.license || raw?.doctorRegId || raw?.syndicateId || raw?.doctor?.license_no, 'Not provided');
   const clinicName = toText(raw?.clinicName || raw?.clinic?.name).trim() || 'Electronic Prescription';
   const phone = toText(raw?.phone || raw?.doctorPhone || raw?.clinic?.phone).trim();
-  
+
   const rawPhoneDigits = phone.replace(/[^0-9+]/g, '');
   const cleanPhoneForDial = /^\+?[0-9]{7,15}$/.test(rawPhoneDigits) ? rawPhoneDigits : '';
 
@@ -71,7 +72,7 @@ export default async function PharmacistPage({ params }: PageProps) {
       websiteUrl = '';
     }
   }
-  
+
   const latitudeText = toText(raw?.latitude).trim();
   const longitudeText = toText(raw?.longitude).trim();
   const latitude = Number(latitudeText);
@@ -83,7 +84,7 @@ export default async function PharmacistPage({ params }: PageProps) {
   const patient = toText(raw?.patient || raw?.patientName || raw?.name, 'Patient');
   const ageRaw = raw?.age ?? raw?.patientAge ?? raw?.patient?.age;
   const ageText = toText(ageRaw).trim();
-  const age = ageText ? `${ageText} Years` : 'Not provided';
+  const age = ageText ? `${ageText} yrs` : 'Not provided';
   const date = toText(raw?.date || raw?.issueDate || raw?.createdAt, 'Not provided');
 
   const rawList = Array.isArray(raw?.medications)
@@ -100,7 +101,7 @@ export default async function PharmacistPage({ params }: PageProps) {
         title: item,
         subtitle: '',
         dosage: '',
-        instructions: 'Not provided',
+        instructions: '', manufacturer: '',
         duration: '',
         quantity: '',
       };
@@ -134,46 +135,49 @@ export default async function PharmacistPage({ params }: PageProps) {
 
     // Fallback: If tradeName wasn't explicitly supplied, promote genericName
     const displayTitle = tradeName || genericName || 'Prescribed Item';
-    const displaySub = tradeName && genericName && tradeName.toLowerCase() !== genericName.toLowerCase() 
-      ? genericName 
+    const displaySub = tradeName && genericName && tradeName.toLowerCase() !== genericName.toLowerCase()
+      ? genericName
       : '';
 
     const dosage = toText(item?.dosage || item?.dose || item?.strength || item?.form || item?.concentration, '');
     const explicitInstructions = toText(item?.instructions || item?.sig || item?.directions).trim();
     const instructions = explicitInstructions || [toText(item?.frequency || item?.regimen).trim(), toText(item?.notes).trim()].filter(Boolean).join(' · ') || 'Not provided';
+    const manufacturer = toText(item?.manufacturer || item?.manufacturerName || item?.company || item?.companyName, '').trim();
     const duration = toText(item?.duration || item?.period || item?.treatmentDays || item?.days, '');
     const quantity = toText(item?.quantity || item?.qty || item?.count || item?.totalQuantity, '');
 
-    return { 
-      title: displayTitle, 
-      subtitle: displaySub, 
-      dosage, 
-      instructions, 
-      duration, 
-      quantity 
+    return {
+      title: displayTitle,
+      subtitle: displaySub,
+      dosage, manufacturer,
+      instructions,
+      duration,
+      quantity
     };
   });
 
   return (
-    <div style={{ backgroundColor: '#94a3b8', minHeight: '100vh', display: 'flex', justifyContent: 'center', margin: 0, fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
-      <div style={{ width: '100%', maxWidth: '440px', backgroundColor: '#f1f5f9', display: 'flex', flexDirection: 'column', minHeight: '100vh', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>
-        
-        {/* Top Blue Banner */}
-        <header style={{ width: '100%', backgroundColor: '#1d4ed8', color: '#ffffff', padding: '0.85rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 10, boxShadow: '0 1px 3px rgba(0, 0, 0, 0.15)', boxSizing: 'border-box' }}>
-          
-          {/* Left Title Group */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
-            <span style={{ fontFamily: '"Times New Roman", Georgia, serif', fontSize: '1.45rem', fontWeight: 700, color: '#93c5fd', lineHeight: 1 }}>&#8478;</span>
-            <h1 style={{ fontSize: 'clamp(0.8rem, 3.7vw, 1rem)', fontWeight: 700, margin: 0, letterSpacing: '0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{clinicName}</h1>
+    <div className={styles.page}>
+      <div className={styles.sheet}>
+        <header className={styles.header}>
+          <div className={styles.identity}>
+            <span className={styles.rx} aria-hidden="true">&#8478;</span>
+            <div className={styles.prescriber}>
+              <h1 dir="auto">{doctor !== 'Not provided' ? doctor : clinicName}</h1>
+              <div className={styles.headerDetails}>
+                {license !== 'Not provided' ? <span dir="auto">License #{license}</span> : null}
+                {phone ? <bdi>{phone}</bdi> : null}
+              </div>
+              {clinicName !== 'Electronic Prescription' && clinicName !== doctor ? <div className={styles.clinic} dir="auto">{clinicName}</div> : null}
+            </div>
           </div>
-
           {/* Right Action Icons Group */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+          <div className={styles.actions}>
             {/* Phone Call Icon */}
-            {cleanPhoneForDial ? <a 
-              href={`tel:${cleanPhoneForDial}`} 
+            {cleanPhoneForDial ? <a
+              href={`tel:${cleanPhoneForDial}`}
               aria-label="Call Clinic Phone"
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.18)', color: '#ffffff', textDecoration: 'none', border: '1px solid rgba(255, 255, 255, 0.3)' }}
+              className={styles.action}
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
@@ -181,13 +185,13 @@ export default async function PharmacistPage({ params }: PageProps) {
             </a> : null}
 
             {/* Google Maps Pin Icon */}
-            {mapsUrl ? <a 
-              href={mapsUrl} 
-              target="_blank" 
-              rel="noopener noreferrer" 
+            {mapsUrl ? <a
+              href={mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               referrerPolicy="no-referrer"
               aria-label="Open Clinic Location on Google Maps"
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.18)', color: '#ffffff', textDecoration: 'none', border: '1px solid rgba(255, 255, 255, 0.3)' }}
+              className={styles.action}
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
@@ -202,7 +206,7 @@ export default async function PharmacistPage({ params }: PageProps) {
               rel="noopener noreferrer"
               referrerPolicy="no-referrer"
               aria-label="Open Clinic Website"
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.18)', color: '#ffffff', textDecoration: 'none', border: '1px solid rgba(255, 255, 255, 0.3)' }}
+              className={styles.action}
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -214,91 +218,41 @@ export default async function PharmacistPage({ params }: PageProps) {
           </div>
         </header>
 
-        <main style={{ padding: '0.85rem', display: 'flex', flexDirection: 'column', gap: '0.85rem', paddingBottom: '2rem', boxSizing: 'border-box' }}>
-          
-          {/* Prescriber Information Card (Without Rx Token) */}
-          <section style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 1px 2px rgba(0, 0, 0, 0.04)' }}>
-            <div style={{ backgroundColor: '#e2e8f0', padding: '0.5rem 0.85rem', fontSize: '0.85rem', fontWeight: 700, color: '#0f172a', borderBottom: '1px solid #cbd5e1' }}>
-              Prescriber Information
-            </div>
-            <div style={{ padding: '0.75rem 0.85rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              <div style={{ fontSize: '0.875rem', color: '#0f172a' }}>
-                <strong style={{ color: '#475569', marginRight: '4px' }}>Doctor:</strong> {doctor}
-              </div>
-              <div style={{ fontSize: '0.875rem', color: '#0f172a' }}>
-                <strong style={{ color: '#475569', marginRight: '4px' }}>License:</strong> {license}
-              </div>
-              <div style={{ fontSize: '0.875rem', color: '#0f172a' }}>
-                <strong style={{ color: '#475569', marginRight: '4px' }}>Phone:</strong> {phone || 'Not provided'}
-              </div>
+        <main className={styles.main}>
+          <section className={styles.patient} aria-label="Patient details">
+            <h2 dir="auto">{patient}</h2>
+            <div className={styles.patientMeta}>
+              {ageText ? <bdi>{age}</bdi> : null}
+              {ageText && date !== 'Not provided' ? <span aria-hidden="true">•</span> : null}
+              {date !== 'Not provided' ? <bdi>{date}</bdi> : null}
             </div>
           </section>
-
-          {/* Patient Details Card */}
-          <section style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 1px 2px rgba(0, 0, 0, 0.04)' }}>
-            <div style={{ backgroundColor: '#e2e8f0', padding: '0.5rem 0.85rem', fontSize: '0.85rem', fontWeight: 700, color: '#0f172a', borderBottom: '1px solid #cbd5e1' }}>
-              Patient Details
+          <section className={styles.medications} aria-labelledby="medications-heading">
+            <div className={styles.sectionHeading}>
+              <h2 id="medications-heading">Prescribed medications</h2>
+              <span>{medications.length} {medications.length === 1 ? 'item' : 'items'}</span>
             </div>
-            <div style={{ padding: '0.75rem 0.85rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              <div style={{ fontSize: '0.875rem', color: '#0f172a' }}>
-                <strong style={{ color: '#475569', marginRight: '4px' }}>Name:</strong> {patient}
-              </div>
-              <div style={{ fontSize: '0.875rem', color: '#0f172a' }}>
-                <strong style={{ color: '#475569', marginRight: '4px' }}>Age:</strong> {age}
-              </div>
-              <div style={{ fontSize: '0.875rem', color: '#0f172a' }}>
-                <strong style={{ color: '#475569', marginRight: '4px' }}>Date:</strong> {date}
-              </div>
-            </div>
-          </section>
-
-          {/* Prescribed Medications Section */}
-          <section style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-            {medications.length > 0 ? (
-              medications.map((med: any, index: number) => (
-                <article key={index} style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '0.9rem', display: 'flex', flexDirection: 'column', gap: '0.65rem', boxShadow: '0 1px 2px rgba(0, 0, 0, 0.04)' }}>
-                  
-                  {/* Drug Identity: Trade Name + Optional Scientific/Generic Subtitle */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
-                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0f172a', lineHeight: 1.3 }}>
-                      {med.title}
-                    </div>
-                    {med.subtitle ? (
-                      <div style={{ fontSize: '0.8rem', fontStyle: 'italic', color: '#64748b' }}>
-                        {med.subtitle}
-                      </div>
-                    ) : null}
+            {medications.length > 0 ? <ol className={styles.list}>
+              {medications.map((med: any, index: number) => <li key={index} className={styles.medication}>
+                <span className={styles.number} aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+                <article className={styles.medicationBody}>
+                  <div className={styles.drugHeading}>
+                    <h3 dir="auto">{med.title}</h3>
+                    {med.dosage ? <bdi className={styles.dosage}>{med.dosage}</bdi> : null}
+                    {med.manufacturer ? <span className={styles.manufacturer} dir="auto">{med.manufacturer}</span> : null}
                   </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.825rem' }}>
-                    <span style={{ color: '#0f172a' }}>
-                      <strong style={{ color: '#475569', marginRight: '4px' }}>Dosage:</strong> {med.dosage || 'Not provided'}
-                    </span>
-                    {med.quantity ? (
-                      <span style={{ backgroundColor: '#dcfce7', color: '#14532d', fontSize: '0.75rem', fontWeight: 700, padding: '0.25rem 0.6rem', borderRadius: '9999px' }}>
-                        {med.quantity}
-                      </span>
-                    ) : null}
-                  </div>
-
-                  <div style={{ backgroundColor: '#f0fdf4', borderLeft: '3px solid #86efac', borderRadius: '0 8px 8px 0', padding: '0.6rem 0.75rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#166534' }}>Instructions</span>
-                    <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#14532d', lineHeight: 1.35 }}>{med.instructions}</span>
-                  </div>
-
-                  {(med.duration || med.quantity) ? (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.825rem', fontWeight: 600, color: '#0f172a' }}>
-                      <span style={{ color: '#475569' }}>Duration / Qty</span>
-                      <span>{med.duration || 'Not provided'} {med.quantity ? `/ Qty ${med.quantity}` : ''}</span>
-                    </div>
-                  ) : null}
+                  {med.subtitle ? <p className={styles.generic} dir="auto">{med.subtitle}</p> : null}
+                  {med.instructions && med.instructions.trim().toLowerCase() !== 'not provided' ? <div className={styles.instructions}>
+                    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                    <p dir="auto">{med.instructions}</p>
+                  </div> : null}
+                  {med.duration || med.quantity ? <div className={styles.treatment}>
+                    {med.duration ? <span>Duration: <bdi>{med.duration}</bdi></span> : null}
+                    {med.quantity ? <span>Qty: <bdi>{med.quantity}</bdi></span> : null}
+                  </div> : null}
                 </article>
-              ))
-            ) : (
-              <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '1rem', textAlign: 'center', color: '#64748b' }}>
-                No active medications listed in this record.
-              </div>
-            )}
+              </li>)}
+            </ol> : <p className={styles.empty}>No active medications listed in this record.</p>}
           </section>
         </main>
       </div>
