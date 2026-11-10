@@ -1,4 +1,5 @@
 import styles from './prescription.module.css';
+import { medicationIdentity, genericSubtitle } from '../../lib/rx-presentation';
 import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
@@ -52,6 +53,9 @@ export default async function PharmacistPage({ params }: PageProps) {
   const doctor = typeof raw?.doctor === 'object' && raw.doctor !== null
     ? [toText(raw.doctor.name), toText(raw.doctor.specialty)].filter(Boolean).join(' · ') || 'Not provided'
     : toText(raw?.doctor || raw?.doctorName || raw?.prescriber, 'Not provided');
+  const doctorParts = doctor.split(/\s*[·•]\s*/);
+  const doctorName = doctorParts[0];
+  const specialty = doctorParts.slice(1).join(' · ');
   const license = toText(raw?.registrationId || raw?.regId || raw?.license || raw?.doctorRegId || raw?.syndicateId || raw?.doctor?.license_no, 'Not provided');
   const clinicName = toText(raw?.clinicName || raw?.clinic?.name).trim() || 'Electronic Prescription';
   const phone = toText(raw?.phone || raw?.doctorPhone || raw?.clinic?.phone).trim();
@@ -98,10 +102,9 @@ export default async function PharmacistPage({ params }: PageProps) {
   const medications = rawList.map((item: any) => {
     if (typeof item === 'string') {
       return {
-        title: item,
+        ...medicationIdentity(item, '', ''),
         subtitle: '',
-        dosage: '',
-        instructions: '', manufacturer: '',
+        instructions: '',
         duration: '',
         quantity: '',
       };
@@ -147,9 +150,8 @@ export default async function PharmacistPage({ params }: PageProps) {
     const quantity = toText(item?.quantity || item?.qty || item?.count || item?.totalQuantity, '');
 
     return {
-      title: displayTitle,
-      subtitle: displaySub,
-      dosage, manufacturer,
+      ...medicationIdentity(displayTitle, dosage, manufacturer),
+      subtitle: genericSubtitle(displaySub),
       instructions,
       duration,
       quantity
@@ -163,9 +165,10 @@ export default async function PharmacistPage({ params }: PageProps) {
           <div className={styles.identity}>
             <span className={styles.rx} aria-hidden="true">&#8478;</span>
             <div className={styles.prescriber}>
-              <h1 dir="auto">{doctor !== 'Not provided' ? doctor : clinicName}</h1>
+              <h1 dir="auto">{doctor !== 'Not provided' ? doctorName : clinicName}{specialty ? <span className={styles.specialty}> • <bdi>{specialty}</bdi></span> : null}</h1>
               <div className={styles.headerDetails}>
                 {license !== 'Not provided' ? <span dir="auto">License #{license}</span> : null}
+                {license !== 'Not provided' && phone ? <span aria-hidden="true">•</span> : null}
                 {phone ? <bdi>{phone}</bdi> : null}
               </div>
               {clinicName !== 'Electronic Prescription' && clinicName !== doctor ? <div className={styles.clinic} dir="auto">{clinicName}</div> : null}
@@ -181,7 +184,7 @@ export default async function PharmacistPage({ params }: PageProps) {
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-              </svg>
+              </svg><span>Call</span>
             </a> : null}
 
             {/* Google Maps Pin Icon */}
@@ -196,7 +199,7 @@ export default async function PharmacistPage({ params }: PageProps) {
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                 <circle cx="12" cy="10" r="3"></circle>
-              </svg>
+              </svg><span>Map</span>
             </a> : null}
 
             {/* Clinic Website Icon */}
@@ -213,7 +216,7 @@ export default async function PharmacistPage({ params }: PageProps) {
                 <path d="M2 12h20"></path>
                 <path d="M12 2a15.3 15.3 0 0 1 0 20"></path>
                 <path d="M12 2a15.3 15.3 0 0 0 0 20"></path>
-              </svg>
+              </svg><span>Web</span>
             </a> : null}
           </div>
         </header>
