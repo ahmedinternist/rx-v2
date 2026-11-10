@@ -240,19 +240,16 @@ export default async function PharmacistPage({ params }: PageProps) {
                 <span className={styles.number} aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
                 <article className={styles.medicationBody}>
                   <div className={styles.drugHeading}>
-                    <h3 dir="auto">{med.title}</h3>
+                    <h3 dir="auto">{med.title.replace(/\s+(tab\.?)$/i, '')}{/\s+tab\.?$/i.test(med.title) ? <> <span className={styles.form}>{med.title.match(/tab\.?$/i)?.[0]}</span></> : null}</h3>
                     {med.dosage ? <bdi className={styles.dosage}>{med.dosage}</bdi> : null}
                     {med.manufacturer ? <span className={styles.manufacturer} dir="auto">{med.manufacturer}</span> : null}
                   </div>
                   {med.subtitle ? <p className={styles.generic} dir="auto">{med.subtitle}</p> : null}
-                  {med.instructions && med.instructions.trim().toLowerCase() !== 'not provided' ? <div className={styles.instructions}>
-                    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-                    <p dir="auto">{med.instructions}</p>
+                  {(med.instructions && med.instructions.trim().toLowerCase() !== 'not provided') || med.duration ? <div className={styles.instructions} dir="ltr">
+                    {med.instructions && med.instructions.trim().toLowerCase() !== 'not provided' ? <span className={styles.instructionText} dir="auto">{med.instructions}</span> : null}
+                    {med.duration ? <span className={styles.duration} dir="auto" aria-label="Treatment duration">{med.duration}</span> : null}
                   </div> : null}
-                  {med.duration || med.quantity ? <div className={styles.treatment}>
-                    {med.duration ? <span>Duration: <bdi>{med.duration}</bdi></span> : null}
-                    {med.quantity ? <span>Qty: <bdi>{med.quantity}</bdi></span> : null}
-                  </div> : null}
+                  {med.quantity ? <div className={styles.treatment}><span>Qty: <bdi>{med.quantity}</bdi></span></div> : null}
                 </article>
               </li>)}
             </ol> : <p className={styles.empty}>No active medications listed in this record.</p>}
