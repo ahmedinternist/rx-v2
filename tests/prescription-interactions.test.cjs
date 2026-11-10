@@ -47,6 +47,9 @@ test('compact prescription keeps all directions visible without dropdowns', asyn
     assert(!html.includes('aria-expanded'));
     assert(!html.includes('aria-controls'));
     assert(!html.includes('Prescription details'));
+    assert(!html.includes('Prescribed medications'));
+    assert(!html.includes('4 items'));
+    assert(html.includes('aria-label="Medications"><ol'));
     assert(!html.includes('Dosing schedule'));
     assert(!html.includes('Meal timing'));
     assert(!html.includes('Treatment length'));

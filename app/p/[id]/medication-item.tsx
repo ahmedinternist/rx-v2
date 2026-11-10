@@ -8,7 +8,25 @@ export default function MedicationItem({ index, children }: {
   children: ReactNode;
 }) {
   const [entered, setEntered] = useState(false);
+  const [touched, setTouched] = useState(false);
   const row = useRef<HTMLLIElement>(null);
+  const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (feedbackTimer.current !== null) clearTimeout(feedbackTimer.current);
+  }, []);
+
+  const clearFeedback = () => {
+    if (feedbackTimer.current !== null) clearTimeout(feedbackTimer.current);
+    setTouched(false);
+  };
+
+  const touchFeedback = () => {
+    if (feedbackTimer.current !== null) clearTimeout(feedbackTimer.current);
+    setTouched(true);
+    // Brief feedback only: tapping a medicine does not open or change anything.
+    feedbackTimer.current = setTimeout(() => setTouched(false), 650);
+  };
 
   useEffect(() => {
     if (!row.current || !('IntersectionObserver' in window)) {
@@ -26,7 +44,9 @@ export default function MedicationItem({ index, children }: {
   }, []);
 
   return (
-    <li ref={row} className={styles.medication} data-entered={entered}
+    <li ref={row} className={styles.medication} data-entered={entered} data-touched={touched}
+      onPointerDown={touchFeedback} onPointerUp={touchFeedback} onPointerCancel={clearFeedback}
+      onPointerLeave={event => { if (event.pointerType === 'mouse') clearFeedback(); }}
       style={{ '--entrance-delay': `${Math.min(index, 5) * 0.08}s` } as CSSProperties}>
       <span className={styles.number} aria-hidden="true">{index + 1}</span>
       <article className={styles.medicationBody}>

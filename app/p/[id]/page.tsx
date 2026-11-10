@@ -238,11 +238,7 @@ export default async function PharmacistPage({ params }: PageProps) {
               {date !== 'Not provided' ? <bdi>{date}</bdi> : null}
             </div>
           </section>
-          <section className={styles.medications} aria-labelledby="medications-heading">
-            <div className={styles.sectionHeading}>
-              <h2 id="medications-heading">Prescribed medications</h2>
-              <span>{medications.length} {medications.length === 1 ? 'item' : 'items'}</span>
-            </div>
+          <section className={styles.medications} aria-label="Medications">
             {medications.length > 0 ? <ol className={styles.list}>
               {medications.map((med: any, index: number) => <MedicationItem key={index} index={index}>
                   <div className={styles.drugHeading}>
