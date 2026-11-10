@@ -105,7 +105,6 @@ export default async function PharmacistPage({ params }: PageProps) {
       return {
         ...medicationIdentity(item, '', ''),
         subtitle: '',
-        details: [],
         instructions: '',
         duration: '',
         quantity: '',
@@ -163,13 +162,6 @@ export default async function PharmacistPage({ params }: PageProps) {
       instructions,
       duration,
       quantity,
-      details: [
-        { label: 'Dosing schedule', value: instructionSummary(toText(item?.frequency || item?.regimen), explicitInstructions) },
-        { label: 'Meal timing', value: instructionSummary(toText(item?.mealTiming || item?.meal_timing)) },
-        { label: 'Treatment length', value: instructionSummary(duration) },
-        { label: 'Quantity', value: instructionSummary(quantity) },
-        { label: 'Notes', value: instructionSummary(toText(item?.notes)) },
-      ].filter(detail => detail.value),
     };
   });
 
@@ -251,7 +243,7 @@ export default async function PharmacistPage({ params }: PageProps) {
               <span>{medications.length} {medications.length === 1 ? 'item' : 'items'}</span>
             </div>
             {medications.length > 0 ? <ol className={styles.list}>
-              {medications.map((med: any, index: number) => <MedicationItem key={index} index={index} name={med.title} details={med.details}>
+              {medications.map((med: any, index: number) => <MedicationItem key={index} index={index}>
                   <div className={styles.drugHeading}>
                     <h3 dir="auto">{med.title.replace(/\s+(tab\.?)$/i, '')}{/\s+tab\.?$/i.test(med.title) ? <> <span className={styles.form}>{med.title.match(/tab\.?$/i)?.[0]}</span></> : null}</h3>
                     {med.dosage ? <bdi className={styles.dosage}>{med.dosage}</bdi> : null}

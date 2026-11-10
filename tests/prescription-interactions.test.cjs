@@ -25,7 +25,7 @@ function load(file) {
   return mod.exports;
 }
 
-test('prescription keeps directions visible and exposes only supplied accordion details', async () => {
+test('compact prescription keeps all directions visible without dropdowns', async () => {
   const originalFetch = global.fetch;
   const oldUrl = process.env.UPSTASH_REDIS_REST_URL;
   const oldToken = process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -43,15 +43,14 @@ test('prescription keeps directions visible and exposes only supplied accordion 
   try {
     const Page = load('app/p/[id]/page.tsx').default;
     const html = renderToStaticMarkup(await Page({ params: Promise.resolve({ id: 'fictional' }) }));
-    assert.equal((html.match(/aria-expanded="false"/g) || []).length, 2);
-    const controls = [...html.matchAll(/aria-controls="([^"]+)"/g)].map(match => match[1]);
-    assert.equal(new Set(controls).size, 2);
-    for (const id of controls) assert(html.includes(`id="${id}"`));
-    assert(html.includes('aria-hidden="true" inert=""'));
+    assert(!html.includes('aria-expanded'));
+    assert(!html.includes('aria-controls'));
+    assert(!html.includes('Prescription details'));
+    assert(!html.includes('Dosing schedule'));
+    assert(!html.includes('Meal timing'));
+    assert(!html.includes('Treatment length'));
+    assert(html.includes('Qty: <bdi>60</bdi>'));
     assert(html.includes('class="instructionText" dir="auto">1x1 • قبل الاكل • شهرين'));
-    assert(html.includes('Dosing schedule'));
-    assert(html.includes('Meal timing'));
-    assert(html.includes('Treatment length'));
     assert(!html.includes('Refill details'));
     assert(!html.includes('Days left'));
     assert(!html.includes('Not provided'));
