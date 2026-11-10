@@ -1,3 +1,4 @@
+import MedicationItem from './medication-item';
 import styles from './prescription.module.css';
 import { medicationIdentity, genericSubtitle, instructionSummary } from '../../lib/rx-presentation';
 import { notFound } from 'next/navigation';
@@ -104,6 +105,7 @@ export default async function PharmacistPage({ params }: PageProps) {
       return {
         ...medicationIdentity(item, '', ''),
         subtitle: '',
+        details: [],
         instructions: '',
         duration: '',
         quantity: '',
@@ -160,7 +162,14 @@ export default async function PharmacistPage({ params }: PageProps) {
       subtitle: genericSubtitle(displaySub),
       instructions,
       duration,
-      quantity
+      quantity,
+      details: [
+        { label: 'Dosing schedule', value: instructionSummary(toText(item?.frequency || item?.regimen), explicitInstructions) },
+        { label: 'Meal timing', value: instructionSummary(toText(item?.mealTiming || item?.meal_timing)) },
+        { label: 'Treatment length', value: instructionSummary(duration) },
+        { label: 'Quantity', value: instructionSummary(quantity) },
+        { label: 'Notes', value: instructionSummary(toText(item?.notes)) },
+      ].filter(detail => detail.value),
     };
   });
 
@@ -242,9 +251,7 @@ export default async function PharmacistPage({ params }: PageProps) {
               <span>{medications.length} {medications.length === 1 ? 'item' : 'items'}</span>
             </div>
             {medications.length > 0 ? <ol className={styles.list}>
-              {medications.map((med: any, index: number) => <li key={index} className={styles.medication}>
-                <span className={styles.number} aria-hidden="true">{index + 1}</span>
-                <article className={styles.medicationBody}>
+              {medications.map((med: any, index: number) => <MedicationItem key={index} index={index} name={med.title} details={med.details}>
                   <div className={styles.drugHeading}>
                     <h3 dir="auto">{med.title.replace(/\s+(tab\.?)$/i, '')}{/\s+tab\.?$/i.test(med.title) ? <> <span className={styles.form}>{med.title.match(/tab\.?$/i)?.[0]}</span></> : null}</h3>
                     {med.dosage ? <bdi className={styles.dosage}>{med.dosage}</bdi> : null}
@@ -255,8 +262,7 @@ export default async function PharmacistPage({ params }: PageProps) {
                     <span className={styles.instructionText} dir="auto">{med.instructions}</span>
                   </div> : null}
                   {med.quantity ? <div className={styles.treatment}><span>Qty: <bdi>{med.quantity}</bdi></span></div> : null}
-                </article>
-              </li>)}
+              </MedicationItem>)}
             </ol> : <p className={styles.empty}>No active medications listed in this record.</p>}
           </section>
         </main>
