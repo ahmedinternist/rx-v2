@@ -1,5 +1,5 @@
 import styles from './prescription.module.css';
-import { medicationIdentity, genericSubtitle } from '../../lib/rx-presentation';
+import { medicationIdentity, genericSubtitle, instructionSummary } from '../../lib/rx-presentation';
 import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
@@ -144,9 +144,15 @@ export default async function PharmacistPage({ params }: PageProps) {
 
     const dosage = toText(item?.dosage || item?.dose || item?.strength || item?.form || item?.concentration, '');
     const explicitInstructions = toText(item?.instructions || item?.sig || item?.directions).trim();
-    const instructions = explicitInstructions || [toText(item?.frequency || item?.regimen).trim(), toText(item?.notes).trim()].filter(Boolean).join(' · ') || 'Not provided';
     const manufacturer = toText(item?.manufacturer || item?.manufacturerName || item?.company || item?.companyName, '').trim();
     const duration = toText(item?.duration || item?.period || item?.treatmentDays || item?.days, '');
+    const instructions = instructionSummary(
+      toText(item?.frequency || item?.regimen),
+      explicitInstructions,
+      toText(item?.mealTiming || item?.meal_timing),
+      toText(item?.notes),
+      duration,
+    );
     const quantity = toText(item?.quantity || item?.qty || item?.count || item?.totalQuantity, '');
 
     return {
@@ -237,7 +243,7 @@ export default async function PharmacistPage({ params }: PageProps) {
             </div>
             {medications.length > 0 ? <ol className={styles.list}>
               {medications.map((med: any, index: number) => <li key={index} className={styles.medication}>
-                <span className={styles.number} aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+                <span className={styles.number} aria-hidden="true">{index + 1}</span>
                 <article className={styles.medicationBody}>
                   <div className={styles.drugHeading}>
                     <h3 dir="auto">{med.title.replace(/\s+(tab\.?)$/i, '')}{/\s+tab\.?$/i.test(med.title) ? <> <span className={styles.form}>{med.title.match(/tab\.?$/i)?.[0]}</span></> : null}</h3>
@@ -245,9 +251,8 @@ export default async function PharmacistPage({ params }: PageProps) {
                     {med.manufacturer ? <span className={styles.manufacturer} dir="auto">{med.manufacturer}</span> : null}
                   </div>
                   {med.subtitle ? <p className={styles.generic} dir="auto">{med.subtitle}</p> : null}
-                  {(med.instructions && med.instructions.trim().toLowerCase() !== 'not provided') || med.duration ? <div className={styles.instructions} dir="ltr">
-                    {med.instructions && med.instructions.trim().toLowerCase() !== 'not provided' ? <span className={styles.instructionText} dir="auto">{med.instructions}</span> : null}
-                    {med.duration ? <span className={styles.duration} dir="auto" aria-label="Treatment duration">{med.duration}</span> : null}
+                  {med.instructions ? <div className={styles.instructions} dir="ltr">
+                    <span className={styles.instructionText} dir="auto">{med.instructions}</span>
                   </div> : null}
                   {med.quantity ? <div className={styles.treatment}><span>Qty: <bdi>{med.quantity}</bdi></span></div> : null}
                 </article>

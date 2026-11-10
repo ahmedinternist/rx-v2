@@ -19,3 +19,15 @@ export function medicationIdentity(title: string, dosage: string, manufacturer: 
 }
 
 export const genericSubtitle = (text: string) => text.replace(/\s*\/\s*/g, ' / ');
+
+/** Join supplied directions for display, preserving distinct text and omitting empty placeholders. */
+export function instructionSummary(...parts: string[]): string {
+  const seen = new Set<string>();
+  return parts.flatMap(part => part.split(/[•·]/)).map(part => part.trim())
+    .filter(part => {
+      const key = part.toLowerCase();
+      if (!key || key === 'not provided' || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).join(' • ');
+}
