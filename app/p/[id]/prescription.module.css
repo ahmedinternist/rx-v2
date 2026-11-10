@@ -1,46 +1,46 @@
-.page { min-height: 100vh; background: #f8fafc; color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-.sheet { width: 100%; max-width: 640px; min-height: 100vh; margin: 0 auto; background: #f8fafc; }
-.header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 24px; background: #0f172a; color: #fff; }
+.page { --rx-surface: #f8fafc; --rx-ink: #0f172a; --rx-header-muted: #cbd5e1; --rx-border: #e2e8f0; --rx-contact: #253044; --rx-text: #334155; --rx-header-focus: #93c5fd; --rx-muted: #64748b; --rx-soft: #f1f5f9; --rx-secondary: #475569; --rx-badge: #eff6ff; --rx-badge-text: #1d4ed8; --rx-highlight: #dbeafe; --rx-raised: #fcfdff; --rx-shadow: #020617; --rx-focus: #2563eb; --rx-paper: #ffffff; min-height: 100vh; background: var(--rx-surface); color: var(--rx-ink); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+.sheet { width: 100%; max-width: 640px; min-height: 100vh; margin: 0 auto; background: var(--rx-surface); }
+.header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 24px; background: var(--rx-ink); color: var(--rx-paper); }
 .identity { display: flex; align-items: center; gap: 14px; min-width: 0; flex: 1 1 240px; }
-.rx { font-family: Georgia, serif; font-size: 36px; color: #cbd5e1; flex-shrink: 0; }
+.rx { font-family: Georgia, serif; font-size: 36px; color: var(--rx-header-muted); flex-shrink: 0; }
 .prescriber { min-width: 0; }
 .prescriber h1 { margin: 0; font-size: 21px; font-weight: 650; line-height: 1.4; overflow-wrap: anywhere; }
-.headerDetails { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 5px; color: #cbd5e1; font-size: 13px; line-height: 1.6; }
-.clinic { margin-top: 4px; color: #cbd5e1; font-size: 13px; overflow-wrap: anywhere; }
+.headerDetails { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 5px; color: var(--rx-header-muted); font-size: 13px; line-height: 1.6; }
+.clinic { margin-top: 4px; color: var(--rx-header-muted); font-size: 13px; overflow-wrap: anywhere; }
 .actions { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); align-items: center; gap: 8px; width: 100%; }
-.action { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 36px; padding: 0 12px; border-radius: 8px; font-size: 13px; color: #e2e8f0; background: #253044; text-decoration: none; }
-.action:hover { background: #334155; }
-.action:focus-visible { outline: 2px solid #93c5fd; outline-offset: 3px; }
+.action { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; min-width: 44px; box-sizing: border-box; padding: 0 12px; border-radius: 8px; font-size: 13px; color: var(--rx-border); background: var(--rx-contact); text-decoration: none; }
+.action:hover { background: var(--rx-text); }
+.action:focus-visible { outline: 2px solid var(--rx-header-focus); outline-offset: 3px; }
 .action svg { width: 19px; height: 19px; stroke-width: 1.8; }
 .main { padding: 24px 20px 40px; }
 .patient { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 20px; padding: 0 2px 24px; }
 .patient h2 { margin: 0; font-size: 21px; line-height: 1.6; font-weight: 650; overflow-wrap: anywhere; max-width: 100%; }
-.patientMeta { display: flex; flex-wrap: wrap; gap: 7px; color: #64748b; font-size: 13px; font-variant-numeric: tabular-nums; }
-.medications { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; }
-.sectionHeading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 18px 20px; border-bottom: 1px solid #f1f5f9; }
-.sectionHeading h2 { font-size: 14px; font-weight: 650; margin: 0; color: #475569; }
-.sectionHeading span { font-size: 12px; color: #64748b; white-space: nowrap; }
+.patientMeta { display: flex; flex-wrap: wrap; gap: 7px; color: var(--rx-muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.medications { background: var(--rx-paper); border: 1px solid var(--rx-border); border-radius: 16px; overflow: hidden; }
+.sectionHeading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 18px 20px; border-bottom: 1px solid var(--rx-soft); }
+.sectionHeading h2 { font-size: 14px; font-weight: 650; margin: 0; color: var(--rx-secondary); }
+.sectionHeading span { font-size: 12px; color: var(--rx-muted); white-space: nowrap; }
 .list { list-style: none; margin: 0; padding: 0; }
 .medication { display: flex; align-items: baseline; gap: 12px; padding: 18px 20px; }
-.medication + .medication { border-top: 1px solid #f1f5f9; }
-.number { color: #64748b; font-size: 13px; font-variant-numeric: tabular-nums; }
+.medication + .medication { border-top: 1px solid var(--rx-soft); }
+.number { color: var(--rx-muted); font-size: 13px; font-variant-numeric: tabular-nums; }
 .medicationBody { min-width: 0; flex: 1; }
 .drugHeading { display: flex; flex-wrap: wrap; align-items: center; gap: 7px 9px; }
 .drugHeading h3 { margin: 0; font-size: 18px; font-weight: 650; line-height: 1.45; overflow-wrap: anywhere; max-width: 100%; }
-.dosage { white-space: nowrap; background: #eff6ff; color: #1d4ed8; padding: 3px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; overflow-wrap: anywhere; max-width: 100%; box-sizing: border-box; }
-.manufacturer { margin-left: auto; background: transparent; color: #475569; border-radius: 6px; padding: 3px 7px; font-size: 10px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; overflow-wrap: anywhere; max-width: 100%; box-sizing: border-box; }
-.generic { text-transform: capitalize; margin: 7px 0 0; color: #64748b; font-size: 14px; font-style: italic; line-height: 1.6; overflow-wrap: anywhere; }
-.instructions { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; max-width: 100%; box-sizing: border-box; margin-top: 10px; padding: 4px 10px; border-radius: 999px; background: #f1f5f9; color: #334155; }
-.instructionText { min-width: 0; font-size: 15px; line-height: 1.7; text-align: start; white-space: pre-line; overflow-wrap: anywhere; }
-.treatment { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 12px; color: #475569; font-size: 13px; overflow-wrap: anywhere; }
-.empty { padding: 20px; color: #64748b; line-height: 1.6; }
-.page ::selection { background: #dbeafe; color: #0f172a; }
+.dosage { white-space: normal; background: var(--rx-badge); color: var(--rx-badge-text); padding: 3px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; overflow-wrap: anywhere; max-width: 100%; box-sizing: border-box; }
+.manufacturer { margin-inline-start: auto; background: transparent; color: var(--rx-secondary); border-radius: 6px; padding: 3px 7px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; overflow-wrap: anywhere; max-width: 100%; box-sizing: border-box; }
+.generic { text-transform: capitalize; margin: 7px 0 0; color: var(--rx-muted); font-size: 14px; font-style: italic; line-height: 1.6; overflow-wrap: anywhere; }
+.instructions { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; max-width: 100%; box-sizing: border-box; margin-top: 10px; padding: 4px 10px; border-radius: 16px; background: var(--rx-soft); color: var(--rx-text); }
+.instructionText { min-width: 0; font-size: 16px; line-height: 1.7; text-align: start; white-space: pre-line; overflow-wrap: anywhere; }
+.treatment { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 12px; color: var(--rx-secondary); font-size: 13px; overflow-wrap: anywhere; }
+.empty { padding: 20px; color: var(--rx-muted); line-height: 1.6; }
+.page ::selection { background: var(--rx-highlight); color: var(--rx-ink); }
 @media (max-width: 380px) { .header { padding: 20px 16px; gap: 12px; } .main { padding: 20px 12px 32px; } .medication { padding: 16px 14px; gap: 10px; } .sectionHeading { padding: 16px 14px; } }
-@media print { .page, .sheet { background: #fff; } .header { background: #fff; color: #0f172a; } .headerDetails, .clinic { color: #475569; } .actions { display: none; } .medication { break-inside: avoid; } }
+@media print { .page, .sheet { background: var(--rx-paper); } .header { background: var(--rx-paper); color: var(--rx-ink); } .headerDetails, .clinic { color: var(--rx-secondary); } .actions { display: none; } .medication { break-inside: avoid; } }
 
-.specialty { color: #cbd5e1; font-size: 14px; font-weight: 400; }
+.specialty { color: var(--rx-header-muted); font-size: 14px; font-weight: 400; }
 
-.form { color: #64748b; font-size: 14px; font-weight: 400; }
+.form { color: var(--rx-muted); font-size: 14px; font-weight: 400; }
 /* Progressive motion keeps prescription text visible before JavaScript loads. */
 .identity, .actions, .patient { animation: arrive 440ms cubic-bezier(0.16, 1, 0.3, 1) both; }
 .actions { animation-delay: 80ms; }
@@ -49,12 +49,12 @@
 .action:active { transform: scale(0.95); }
 .action::after { content: ''; position: absolute; pointer-events: none; width: 48px; height: 48px; left: calc(50% - 24px); top: calc(50% - 24px); border: 1px solid currentColor; border-radius: 50%; box-shadow: 0 0 0 10px currentColor; opacity: 0; transform: scale(3); transition: transform 550ms ease-out, opacity 550ms ease-out; }
 .action:active::after { transform: scale(0.1); opacity: 0.18; transition: none; }
-.medication { position: relative; opacity: 0.85; box-shadow: 0 5px 12px -12px #334155; transition: opacity 350ms ease, background-color 250ms ease, box-shadow 250ms ease; }
+.medication { position: relative; opacity: 1; box-shadow: 0 5px 12px -12px var(--rx-text); transition: opacity 350ms ease, background-color 250ms ease, box-shadow 250ms ease; }
 .medication[data-entered='true'] { opacity: 1; animation: arrive 440ms cubic-bezier(0.16, 1, 0.3, 1) var(--entrance-delay, 0s) both; }
-.medication:is(:hover, :active) { z-index: 1; background: #fcfdff; box-shadow: 0 7px 18px -12px #334155; }
-.medication:is(:hover, :active) .dosage { box-shadow: 0 0 0 3px #dbeafe; }
-@keyframes arrive { from { opacity: 0.85; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-@media (hover: hover) { .action:hover { transform: translateY(-2px); box-shadow: 0 4px 10px -5px #020617; } .action:active { transform: scale(0.95); } }
+.medication:is(:hover, :active) { z-index: 1; background: var(--rx-raised); box-shadow: 0 7px 18px -12px var(--rx-text); }
+.medication:is(:hover, :active) .dosage { box-shadow: 0 0 0 3px var(--rx-highlight); }
+@keyframes arrive { from { transform: translateY(8px); } to { transform: translateY(0); } }
+@media (hover: hover) { .action:hover { transform: translateY(-2px); box-shadow: 0 4px 10px -5px var(--rx-shadow); } .action:active { transform: scale(0.95); } }
 @media (prefers-reduced-motion: reduce) {
   .page *, .page *::after { animation: none !important; transition: none !important; }
   .medication { opacity: 1; }
@@ -65,3 +65,13 @@
   .page * { animation: none !important; transition: none !important; }
   .medication { opacity: 1; box-shadow: none !important; }
 }
+
+.action span { min-width: 0; overflow-wrap: anywhere; }
+.sectionHeading h2 { min-width: 0; overflow-wrap: anywhere; }
+.patientMeta { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+.recovery { max-width: 440px; margin: 0 auto; padding: 48px 24px; line-height: 1.7; overflow-wrap: anywhere; }
+.recovery h1 { font-size: 24px; }
+.retry { border: 0; padding: 10px 18px; min-height: 44px; border-radius: 8px; background: var(--rx-ink); color: var(--rx-paper); font: inherit; cursor: pointer; }
+.retry:focus-visible { outline: 2px solid var(--rx-focus); outline-offset: 3px; }
+
+@media print { .specialty, .rx { color: var(--rx-secondary); } }

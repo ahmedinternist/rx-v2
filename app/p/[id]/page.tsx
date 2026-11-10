@@ -1,3 +1,4 @@
+import LocalizedText from './localized-text';
 import MedicationItem from './medication-item';
 import styles from './prescription.module.css';
 import { medicationIdentity, genericSubtitle, instructionSummary } from '../../lib/rx-presentation';
@@ -172,7 +173,7 @@ export default async function PharmacistPage({ params }: PageProps) {
           <div className={styles.identity}>
             <span className={styles.rx} aria-hidden="true">&#8478;</span>
             <div className={styles.prescriber}>
-              <h1 dir="auto">{doctor !== 'Not provided' ? doctorName : clinicName}{specialty ? <span className={styles.specialty}> • <bdi>{specialty}</bdi></span> : null}</h1>
+              <h1 dir="auto">{doctor !== 'Not provided' ? doctorName : clinicName}{specialty ? <span className={styles.specialty}> • <bdi><LocalizedText text={specialty} /></bdi></span> : null}</h1>
               <div className={styles.headerDetails}>
                 {license !== 'Not provided' ? <span dir="auto">License #{license}</span> : null}
                 {license !== 'Not provided' && phone ? <span aria-hidden="true">•</span> : null}
@@ -251,7 +252,7 @@ export default async function PharmacistPage({ params }: PageProps) {
                   </div>
                   {med.subtitle ? <p className={styles.generic} dir="auto">{med.subtitle}</p> : null}
                   {med.instructions ? <div className={styles.instructions} dir="ltr">
-                    <span className={styles.instructionText} dir="auto">{med.instructions}</span>
+                    <span className={styles.instructionText} dir="auto"><LocalizedText text={med.instructions} /></span>
                   </div> : null}
                   {med.quantity ? <div className={styles.treatment}><span>Qty: <bdi>{med.quantity}</bdi></span></div> : null}
               </MedicationItem>)}
